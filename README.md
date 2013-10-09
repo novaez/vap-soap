@@ -124,4 +124,4 @@ You can find a client script in the `.../client` folder. It accepts two argument
 | -------- | ------------------------------------ |
 | 20001    | 014c7e2e-61f8-43bb-b8f3-97dac1e7a07a |
 
-This client always connect to the port 8180 on localhost. If you need connect to other, change the constants `SERVERHOST` and `SERVERPORT`.
+This client always connect to the port `8180` on `localhost`. If you want to connect to another, change the constants `SERVERHOST` and `SERVERPORT` in the script.
