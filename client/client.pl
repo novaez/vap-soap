@@ -20,7 +20,7 @@ print "clientId=$clientId, purchaseTokenUuid=$purchaseTokenUuid\n";
 
 my $service_address = 'http://'.SERVERHOST.':'.SERVERPORT.'/api/Vap_v2_0';
 my $uri = URI->new($service_address);                # additional HTTP authorization
-$uri->userinfo('administrator:quative'); 
+$uri->userinfo('username:password'); 
 
 my $http = XML::Compile::Transport::SOAPHTTP->new(  # setting new transport
     address => $uri->as_string,                     # with explicit address
