@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:vap="http://abc.com/xmlns/screen/mrs/Vap_v2_0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://abc.com/xmlns/screen/mrs/Vap_v2_0" version="1.0">
+	<!-- Proposal -->
+	<xs:annotation>
+		<xs:documentation>
+		</xs:documentation>
+	</xs:annotation>
+	<xs:element name="NgodS1VapRequest">
+		<xs:complexType>
+			<xs:annotation>
+				<xs:documentation>
+				A VAP request from an NGOD S1 STB. The STB has already negotiated 
+				an NGOD E2 selection-start request. Currently the client ID provided
+				must be the smartcard ID. In future, MAC addresses may be supported 
+				as well.
+				</xs:documentation>
+			</xs:annotation>
+			<xs:attribute name="clientId" type="xs:string" use="optional"/>
+			<xs:attribute name="purchaseTokenUuid" type="xs:string" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="VapResponse">
+		<xs:complexType>
+			<xs:annotation>
+				<xs:documentation>
+				A successful (playout granted) response to a VAP request. Applies 
+				equally to NGOD S1 or any other supported flow (in future).
+				Future versions of this specification may define further extended
+				info blocks, similar to the NgodInfo block.
+				</xs:documentation>
+			</xs:annotation>
+			<xs:sequence>
+				<xs:element name="generalInfo" type="vap:GeneralInfo" minOccurs="0"/>
+				<xs:element name="ngodInfo" type="vap:NgodInfo" minOccurs="0"/>
+				<xs:element name="playlist" type="vap:Playlist" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="GeneralInfo">
+		<xs:annotation>
+			<xs:documentation>
+			General business data. Mostly used for UBR.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="accountId" type="xs:string" minOccurs="0"/>
+			<xs:element name="serverBusinessString" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="deviceId" type="xs:string" use="optional"/>
+		<xs:attribute name="contentType" type="vap:ContentType" use="optional"/>
+		<xs:attribute name="spid" type="xs:long" use="optional"/>
+	</xs:complexType>
+	<xs:simpleType name="ContentType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="COD"/>
+			<xs:enumeration value="SO"/>
+			<xs:enumeration value="CU"/>
+			<xs:enumeration value="SOCU"/>
+			<xs:enumeration value="TS"/>
+			<xs:enumeration value="SDB"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="NgodInfo">
+		<xs:annotation>
+			<xs:documentation>
+			NGOD-specific additional data. Only used for UBR.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="clientPrivateString" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Playlist">
+		<xs:annotation>
+			<xs:documentation>
+			The list of assets to play out. 
+			Conventional VOD: only one asset.
+			Ad-supported VOD: A single entertainment asset, topped and tailed
+			with adverts. (More sophisticated models may be supported in future.)
+			Time-shifting: A list of time slices, covering the range requested.
+			The initialAssetIndex and timeOffset are passed to the streaming server
+			to specify where in the playlist the playback should start (where supported
+			by the streaming server). Note that the initialAssetIndex starts from one, 
+			not zero.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="accessCriteriaHex" type="vap:HexData" minOccurs="0"/>
+			<xs:element name="assets" type="vap:PlaylistAsset" minOccurs="0" maxOccurs="1024"/>
+		</xs:sequence>
+		<xs:attribute name="initialAssetIndex" type="xs:int" use="optional"/>
+		<xs:attribute name="timeOffset" type="xs:long" use="optional"/>
+	</xs:complexType>
+	<xs:simpleType name="HexData">
+		<xs:annotation>
+			<xs:documentation>
+			Hex digits: 0-9, a-f.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0-9a-f]*"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="PlaylistAsset">
+		<xs:annotation>
+			<xs:documentation>
+			An asset to play out - VOD asset, Ad, Trailer, SOCU recording, 
+			TS slice, SDB channel. 
+			CableLabs asset ID and provider ID only apply to VOD assets. 
+			If TrickPlay is omitted, all TrickPlay options are permitted.
+			Multicast attributes only apply to SDB assets.
+			event attributes only apply to SO / CU / SOCU assets.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="cableLabsAssetId" type="xs:string" minOccurs="0"/>
+			<xs:element name="cableLabsProviderId" type="xs:string" minOccurs="0"/>
+			<xs:element name="trickPlay" type="vap:TrickPlay" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="assetUri" type="xs:string" use="optional"/>
+		<xs:attribute name="assetFilename" type="xs:string"/>
+		<xs:attribute name="playType" type="vap:PlayType" use="optional"/>
+		<xs:attribute name="definition" type="vap:Definition" use="optional"/>
+		<xs:attribute name="encoding" type="vap:Encoding" use="optional"/>
+		<xs:attribute name="bitRate" type="xs:long"/>
+		<xs:attribute name="multicastAddress" type="xs:string"/>
+		<xs:attribute name="multicastPort" type="vap:InternetPort"/>
+		<xs:attribute name="multicastSourceAddress" type="xs:string"/>
+		<xs:attribute name="multicastProgram" type="xs:int"/>
+		<xs:attribute name="eventStartMillis" type="xs:long"/>
+		<xs:attribute name="eventEndMillis" type="xs:long"/>
+	</xs:complexType>
+	<xs:simpleType name="PlayType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ENTERTAINMENT"/>
+			<xs:enumeration value="ADVERTISEMENT"/>
+			<xs:enumeration value="TRAILER"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="TrickPlay">
+		<xs:annotation>
+			<xs:documentation>
+			Trick-play options which are permitted. "Play" could be taken as 
+			read - if this permission is refused, that doesn't really make sense.
+			("You must fast-forward through this - it really is that bad").
+			If a trick-play definition is omitted, all trick-play options are permitted.
+			Note that in NGOD, the trick-play flags define options which are 
+			prohibited - the logic is negated.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="play" type="xs:boolean" use="optional"/>
+		<xs:attribute name="rewind" type="xs:boolean" use="optional"/>
+		<xs:attribute name="fastForward" type="xs:boolean" use="optional"/>
+		<xs:attribute name="pause" type="xs:boolean" use="optional"/>
+		<xs:attribute name="stop" type="xs:boolean" use="optional"/>
+	</xs:complexType>
+	<xs:simpleType name="Definition">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="SD"/>
+			<xs:enumeration value="HD"/>
+			<xs:enumeration value="THREE_D"/>
+			<xs:enumeration value="UNKNOWN"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Encoding">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="MPEG2"/>
+			<xs:enumeration value="MPEG4"/>
+			<xs:enumeration value="UNKNOWN"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="InternetPort">
+		<xs:annotation>
+			<xs:documentation>
+			A TCP or UDP port.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="1"/>
+			<xs:maxInclusive value="65535"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="VapNackInfo">
+		<xs:complexType>
+			<xs:annotation>
+				<xs:documentation>
+				Response when the VAP rejects the request.
+				errorMessage is a free-form explanation.
+				errorCode should be a suitable code from the list of MRS error codes.
+				</xs:documentation>
+			</xs:annotation>
+			<xs:sequence>
+				<xs:element name="errorMessage" type="xs:string" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attribute name="errorCode" type="xs:string" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

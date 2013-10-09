@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions 
+		targetNamespace="http://abc.com/xmlns/screen/mrs/Vap_v2_0" 
+		name="Vap_v2_0" 
+		xmlns:vap="http://abc.com/xmlns/screen/mrs/Vap_v2_0" 
+		xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+		xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+		xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" 
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+		xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
+		xmlns:wsi="http://ws-i.org/schemas/conformanceClaim" 
+		xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/">
+		
+	<wsdl:documentation>
+    </wsdl:documentation>
+   
+    <!--
+		The data transfer objects are defined in a separate schema document.
+	-->
+	<wsdl:types>
+		<xsd:schema>
+			<xsd:import namespace="http://abc.com/xmlns/screen/mrs/Vap_v2_0" 
+					schemaLocation="Vap_schema_v2_0.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+	
+	
+	<!-- 
+		Messages. In, out (win), out (fail).
+	-->
+	<wsdl:message name="ngodS1VapRequest">
+		<wsdl:part name="parameter" element="vap:NgodS1VapRequest"/>		
+	</wsdl:message>
+	<wsdl:message name="vapResponse">
+		<wsdl:part name="parameter" element="vap:VapResponse"/>
+	</wsdl:message>
+	<wsdl:message name="vapNackException">
+		<wsdl:part name="fault" element="vap:VapNackInfo"/>
+	</wsdl:message>
+	
+	
+	<!-- 
+		The actual API / interface. Start here. 
+	-->
+	<wsdl:portType name="PlayoutAuthority">
+		<wsdl:operation name="checkVapNgod">
+			<wsdl:documentation>Check playout authorization in an NGOD S1 flow.</wsdl:documentation>
+			<wsdl:input message="vap:ngodS1VapRequest"/>
+			<wsdl:output message="vap:vapResponse"/>
+			<wsdl:fault message="vap:vapNackException" name="generalFailure"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	
+	<!-- 
+		Encoding on the wire. portType & messages are abstract syntax, 
+		this is how the syntax shall be represented.
+	-->
+	<wsdl:binding name="PlayoutAuthorityBinding" type="vap:PlayoutAuthority">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="checkVapNgod">
+			<soap:operation soapAction="urn://#checkVapNgod"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="generalFailure">
+				<soap:fault name="generalFailure" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	
+	<!-- 
+		The API binding can be accessed at a specific endpoint - a network location
+		which speaks the specified encoding of the API, if you connect to it. 
+		Or it would, if we knew where the server was going to be - we would do
+		if this was a fixed service offered over the Internet proper, but since it
+		isn't, we don't. The WSDL <service> abstraction allows multiple ports 
+		(and bindings). For example, one could offer the same service over SOAP
+		at one endpoint and JMS at another.
+		
+		NB. PlayoutAuthorityPort must be named that (to match the portType) because
+		JBoss breaks if it isn't. Ugh.
+	-->
+	<wsdl:service name="VapEndpoints">
+		<wsdl:port name="PlayoutAuthorityPort" binding="vap:PlayoutAuthorityBinding">
+			<wsdl:documentation>
+				<wsi:Claim conformsTo="http://ws-i.org/profiles/basic/1.0"/>
+			</wsdl:documentation>
+			<soap:address location="http://localhost:8180/api/Vap_v2_0"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
